@@ -76,7 +76,7 @@ pcu_nos=pcu_chan_sel(pcu_no)
 
 
  
-    
+#This is where the magic happens, this part passes the parameters set as arguments to the laxpc software.
 lx_cmd = """printf \""""+str(pcu_no)+""" """+str(time_bin)+""" """+str(anod)+"""\n""" \
          +str(ch_min)+""" """+str(ch_max)+"""\n"""+str(pcu_nos)+"""\n""" \
          +str(uld_bin)+""" """+str(Erth_occ)+""" """+ str(evt_flg)+"""\n\" | ./laxpcl1"""
