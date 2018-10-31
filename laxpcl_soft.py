@@ -31,19 +31,14 @@ def LAXE(E_start, E_stop, E_rsp1):
 	print "Stop Channel is: ", E_stop_n
 	return E_start_n,E_stop_n, E_rsp1[E_start_n], E_rsp1[E_stop_n]
 
-def pcu_Nchan_sel(pcu_no):
-    	if pcu_no==1:
-        	N_Chns = 512
-    	elif pcu_no==2:
-        	N_Chns = 256
-    	return N_Chns
-
 def pcu_chan_bin(pcu_no, ch_min, ch_max):
 	if pcu_no==1:
         	ch_min_binned,ch_max_binned = ch_min*2, ch_max*2
+		N_Chns = 512
     	elif pcu_no==2:
         	ch_min_binned,ch_max_binned = ch_min*4, ch_max*4
-    	return ch_min_binned,ch_max_binned
+		N_Chns = 256
+    	return ch_min_binned,ch_max_binned,N_Chns
 
 ########################################################################################################################################################################################################################
 
@@ -56,7 +51,7 @@ date_obs_mm = 4
 date_obs_dd = 8
 
 minimum_energy = 3.0				#energy range selecton. Need to be float
-maximum_energy = 10.0
+maximum_energy = 5.0
 
 uld_bin = -1 					#change as required, ref the laxpc readme file for reference
 Erth_occ = 1 
@@ -82,11 +77,9 @@ Ersp2 = rsp_file['col3']
 ch_min, ch_max, E_min, E_max = LAXE(minimum_energy, maximum_energy,  Ersp1)
 print ch_min, ch_max, E_min, E_max
 
-ch_min_binned,ch_max_binned = pcu_chan_bin(pcu_no, ch_min, ch_max)
+ch_min_binned,ch_max_binned,ch_nos = pcu_chan_bin(pcu_no, ch_min, ch_max)
 
 ascii.write([[ch_min_binned], [ch_max_binned],[E_min], [E_max]], "Selected_channels_for_this_run.txt", overwrite=True)
-
-ch_nos=pcu_Nchan_sel(pcu_no)
 
 ########################################################################################################################################################################################################################
  
@@ -102,7 +95,7 @@ bg_cmd = "printf \""+str(pcu_no)+" "+str(anod)+"\n"+str(time_bin)+" "+str(ch_min
 #print bg_cmd
 os.system(bg_cmd)
 
-lcmath_cmd = "printf \""+"lxp"+str(pcu_no)+"level2.lcurv"+"\n"+"lxp2level2_shifted.lcbk\n"+"level2_"+str(time_bin)+"s_"+str(int(E_min))+"_"+str(int(E_max))+"_shifted_backsub.lcurv\n 1.\n 1.\n no\n\" | lcmath"
+lcmath_cmd = "printf \""+"lxp"+str(pcu_no)+"level2.lcurv"+"\n"+"lxp"+str(pcu_no)+"level2_shifted.lcbk\n"+"level2_"+str(pcu_no)+"_"+str(time_bin)+"s_"+str(int(E_min))+"_"+str(int(E_max))+"_shifted_backsub.lcurv\n 1.\n 1.\n no\n\" | lcmath"
 #print lcmath_cmd
 os.system(lcmath_cmd)
 
@@ -110,35 +103,35 @@ os.system(lcmath_cmd)
 ########################################################################################################################################################################################################################
 #This section moves all the essential files to another directory
 directory_source_loc = "/home/ankush/Desktop/Workspace_project/1A_2466-588/LAXPC/outputdata/laxpcsoftv2.5_6Aug2018/"
-directory_dest_loc = "/home/ankush/Desktop/Workspace_project/1A_2466-588/LAXPC/outputdata/laxpcsoftv2.5_6Aug2018/Productions/"
+directory_dest_loc = "./Productions/"
 
-lc_move = "mv "+directory_source_loc+"lxp"+str(pcu_no)+"level2.lcurv"+" "+directory_dest_loc+"lxp"+str(pcu_no)+str(anod)+"level2_"+str(time_bin)+"s_"+str(int(round(E_min)))+"_"+str(int(round(E_max)))+".lcurv"
+lc_move = "mv "+directory_source_loc+"lxp"+str(pcu_no)+"level2.lcurv"+" "+directory_dest_loc+"lxp"+str(pcu_no)+"_"+str(anod)+"level2_"+str(time_bin)+"s_"+str(int(round(E_min)))+"_"+str(int(round(E_max)))+".lcurv"
 os.system(lc_move)
-backlc_move = "mv "+directory_source_loc+"lxp"+str(pcu_no)+"level2.lcbk"+" "+directory_dest_loc+"lxp"+str(pcu_no)+str(anod)+"level2_"+str(time_bin)+"s_"+str(int(round(E_min)))+"_"+str(int(round(E_max)))+".lcbk"
+backlc_move = "mv "+directory_source_loc+"lxp"+str(pcu_no)+"level2.lcbk"+" "+directory_dest_loc+"lxp"+str(pcu_no)+"_"+str(anod)+"level2_"+str(time_bin)+"s_"+str(int(round(E_min)))+"_"+str(int(round(E_max)))+".lcbk"
 os.system(backlc_move)
-gti_move = "mv "+directory_source_loc+"lxp"+str(pcu_no)+"level2.gti"+" "+directory_dest_loc+"lxp"+str(pcu_no)+str(anod)+"level2_"+str(time_bin)+"s_"+str(int(round(E_min)))+"_"+str(int(round(E_max)))+".gti"
+gti_move = "mv "+directory_source_loc+"lxp"+str(pcu_no)+"level2.gti"+" "+directory_dest_loc+"lxp"+str(pcu_no)+"_"+str(anod)+"level2_"+str(time_bin)+"s_"+str(int(round(E_min)))+"_"+str(int(round(E_max)))+".gti"
 os.system(gti_move)
-pha_move = "mv "+directory_source_loc+"lxp"+str(pcu_no)+"level2.pha"+" "+directory_dest_loc+"lxp"+str(pcu_no)+str(anod)+"level2_"+str(time_bin)+"s_"+str(int(round(E_min)))+"_"+str(int(round(E_max)))+".pha"
+pha_move = "mv "+directory_source_loc+"lxp"+str(pcu_no)+"level2.pha"+" "+directory_dest_loc+"lxp"+str(pcu_no)+"_"+str(anod)+"level2_"+str(time_bin)+"s_"+str(int(round(E_min)))+"_"+str(int(round(E_max)))+".pha"
 os.system(pha_move)
-backpha_move = "mv "+directory_source_loc+"lxp"+str(pcu_no)+"level2back.pha"+" "+directory_dest_loc+"lxp"+str(pcu_no)+str(anod)+"level2_"+str(time_bin)+"s_"+str(int(round(E_min)))+"_"+str(int(round(E_max)))+"back.pha"
+backpha_move = "mv "+directory_source_loc+"lxp"+str(pcu_no)+"level2back.pha"+" "+directory_dest_loc+"lxp"+str(pcu_no)+"_"+str(anod)+"level2_"+str(time_bin)+"s_"+str(int(round(E_min)))+"_"+str(int(round(E_max)))+"back.pha"
 os.system(backpha_move)
-FITS_event_move = "mv "+directory_source_loc+"lxp"+str(pcu_no)+"level2.evn"+" "+directory_dest_loc+"lxp"+str(pcu_no)+str(anod)+"level2_"+str(time_bin)+"s_"+str(int(round(E_min)))+"_"+str(int(round(E_max)))+".evn"
+FITS_event_move = "mv "+directory_source_loc+"lxp"+str(pcu_no)+"level2.evn"+" "+directory_dest_loc+"lxp"+str(pcu_no)+"_"+str(anod)+"level2_"+str(time_bin)+"s_"+str(int(round(E_min)))+"_"+str(int(round(E_max)))+".evn"
 os.system(FITS_event_move)
-spectrum_move = "mv "+directory_source_loc+"lxp"+str(pcu_no)+"level2.spec"+" "+directory_dest_loc+"lxp"+str(pcu_no)+str(anod)+"level2_"+str(time_bin)+"s_"+str(int(round(E_min)))+"_"+str(int(round(E_max)))+".spec"
+spectrum_move = "mv "+directory_source_loc+"lxp"+str(pcu_no)+"level2.spec"+" "+directory_dest_loc+"lxp"+str(pcu_no)+"_"+str(anod)+"level2_"+str(time_bin)+"s_"+str(int(round(E_min)))+"_"+str(int(round(E_max)))+".spec"
 os.system(spectrum_move)
 
-shift_lcbk_move = "mv "+directory_source_loc+"lxp"+str(pcu_no)+"level2_shifted.lcbk"+" "+directory_dest_loc+"lxp"+str(pcu_no)+str(anod)+"level2_"+str(time_bin)+"s_"+str(int(round(E_min)))+"_"+str(int(round(E_max)))+"back_shifted.lcbk"
+shift_lcbk_move = "mv "+directory_source_loc+"lxp"+str(pcu_no)+"level2_shifted.lcbk"+" "+directory_dest_loc+"lxp"+str(pcu_no)+"_"+str(anod)+"level2_"+str(time_bin)+"s_"+str(int(round(E_min)))+"_"+str(int(round(E_max)))+"back_shifted.lcbk"
 os.system(shift_lcbk_move)
-shift_pha_move = "mv "+directory_source_loc+"lxp"+str(pcu_no)+"level2back_shifted.pha"+" "+directory_dest_loc+"lxp"+str(pcu_no)+str(anod)+"level2_"+str(time_bin)+"s_"+str(int(round(E_min)))+"_"+str(int(round(E_max)))+"back_shifted.pha"
+shift_pha_move = "mv "+directory_source_loc+"lxp"+str(pcu_no)+"level2back_shifted.pha"+" "+directory_dest_loc+"lxp"+str(pcu_no)+"_"+str(anod)+"level2_"+str(time_bin)+"s_"+str(int(round(E_min)))+"_"+str(int(round(E_max)))+"back_shifted.pha"
 os.system(shift_pha_move)
-shift_lc_move = "mv "+directory_source_loc+"lxp"+str(pcu_no)+"level2_shifted.lc"+" "+directory_dest_loc+"lxp"+str(pcu_no)+str(anod)+"level2_"+str(time_bin)+"s_"+str(int(round(E_min)))+"_"+str(int(round(E_max)))+"back_shifted.lc"
+shift_lc_move = "mv "+directory_source_loc+"lxp"+str(pcu_no)+"level2_shifted.lc"+" "+directory_dest_loc+"lxp"+str(pcu_no)+"_"+str(anod)+"level2_"+str(time_bin)+"s_"+str(int(round(E_min)))+"_"+str(int(round(E_max)))+"back_shifted.lc"
 os.system(shift_lc_move)
-shift_spec_move = "mv "+directory_source_loc+"lxp"+str(pcu_no)+"level2back_shifted.spec"+" "+directory_dest_loc+"lxp"+str(pcu_no)+str(anod)+"level2_"+str(time_bin)+"s_"+str(int(round(E_min)))+"_"+str(int(round(E_max)))+"back_shifted.spec"
-os.system(shift_spec_move)
-corr_lcsr_move = "mv "+directory_source_loc+"lxp"+str(pcu_no)+"level2_corr.lcsr"+" "+directory_dest_loc+"lxp"+str(pcu_no)+str(anod)+"level2_"+str(time_bin)+"s_"+str(int(round(E_min)))+"_"+str(int(round(E_max)))+"_corr.lcsr"
-os.system(shift_spec_move)
+#shift_spec_move = "mv "+directory_source_loc+"lxp"+str(pcu_no)+"level2back_shifted.spec"+" "+directory_dest_loc+"lxp"+str(pcu_no)+"_"+str(anod)+"level2_"+str(time_bin)+"s_"+str(int(round(E_min)))+"_"+str(int(round(E_max)))+"back_shifted.spec"
+#os.system(shift_spec_move)
+corr_lcsr_move = "mv "+directory_source_loc+"lxp"+str(pcu_no)+"level2_corr.lcsr"+" "+directory_dest_loc+"lxp"+str(pcu_no)+"_"+str(anod)+"level2_"+str(time_bin)+"s_"+str(int(round(E_min)))+"_"+str(int(round(E_max)))+"_corr.lcsr"
+os.system(corr_lcsr_move)
 
-shift_backsub_lc_move = "mv "+directory_source_loc+"level2_"+str(time_bin)+"s_"+str(int(E_min))+"_"+str(int(E_max))+"_shifted_backsub.lcurv"+" "+directory_dest_loc+"lxp"+str(pcu_no)+str(anod)+"level2_"+str(time_bin)+"s_"+str(int(round(E_min)))+"_"+str(int(round(E_max)))+"_shifted_backsub.lcurv"
+shift_backsub_lc_move = "mv "+directory_source_loc+"level2_"+str(pcu_no)+"_"+str(time_bin)+"s_"+str(int(E_min))+"_"+str(int(E_max))+"_shifted_backsub.lcurv"+" "+directory_dest_loc+"lxp"+str(pcu_no)+"_"+str(anod)+"level2_"+str(time_bin)+"s_"+str(int(round(E_min)))+"_"+str(int(round(E_max)))+"_shifted_backsub.lcurv"
 os.system(shift_backsub_lc_move)
 
 ########################################################################################################################################################################################################################
